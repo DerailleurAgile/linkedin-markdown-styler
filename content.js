@@ -154,14 +154,32 @@ function containsMarkdown(text) {
 }
 
 /**
+ * Extract post text from an element, converting <br> to newlines and
+ * skipping <button> nodes (e.g. LinkedIn's "…see more" toggle).
+ * We can't use innerText here because it would include the button text.
+ */
+function getPostText(el) {
+  let text = '';
+  for (const node of el.childNodes) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      text += node.textContent;
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      if (node.tagName === 'BUTTON') continue;
+      if (node.tagName === 'BR') { text += '\n'; continue; }
+      text += getPostText(node);
+    }
+  }
+  return text;
+}
+
+/**
  * Process a single LinkedIn post text container element.
  */
 function processElement(el) {
-  
   if (el.hasAttribute(PROCESSED_ATTR)) return;
   if (el.hasAttribute('data-lmr-sibling')) return;
 
-  const originalText = el.innerText;
+  const originalText = getPostText(el);
   if (!originalText || !containsMarkdown(originalText)) return;
 
   el.setAttribute(PROCESSED_ATTR, '1');
