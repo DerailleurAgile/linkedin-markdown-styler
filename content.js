@@ -1,5 +1,5 @@
 /**
- * LinkedIn Markdown Renderer — content.js
+ * LinkedIn Markdown Specs — content.js
  *
  * Supported syntax:
  *   **bold**           → <strong>

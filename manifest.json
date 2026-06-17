@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "LinkedIn Markdown Renderer",
+  "name": "LinkedIn Markdown Specs",
   "version": "1.0.0",
   "description": "Automatically renders markdown formatting in LinkedIn feed posts.",
   "permissions": [],
@@ -18,7 +18,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "LinkedIn Markdown Renderer"
+    "default_title": "LinkedIn Markdown Specs"
   },
   "icons": {
     "16": "icons/icon16.png",

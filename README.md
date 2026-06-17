@@ -1,4 +1,4 @@
-# LinkedIn Markdown Renderer
+# LinkedIn Markdown Specs
 
 A Chrome extension that automatically renders markdown formatting in LinkedIn feed posts.
 
