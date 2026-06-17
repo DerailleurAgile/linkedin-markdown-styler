@@ -23,25 +23,27 @@
   line-height: 1.5;
 }
 
-/* Headings — sized to be distinct but not oversized in a feed context */
+/* Headings — sized to be distinct but not oversized in a feed context.
+   Margins are zeroed out: white-space:pre-wrap means the \n characters in the
+   output already provide line spacing; adding CSS margin on top doubles it. */
 .lmr-rendered h1 {
   font-size: 1.2em;
   font-weight: 700;
-  margin: 0.4em 0 0.2em;
+  margin: 0;
   line-height: 1.3;
 }
 
 .lmr-rendered h2 {
   font-size: 1.1em;
   font-weight: 700;
-  margin: 0.3em 0 0.15em;
+  margin: 0;
   line-height: 1.3;
 }
 
 .lmr-rendered h3 {
   font-size: 1em;
   font-weight: 700;
-  margin: 0.2em 0 0.1em;
+  margin: 0;
   line-height: 1.3;
 }
 
