@@ -121,10 +121,10 @@ function markdownToHtml(text) {
 
     if (headingMatch) {
       flushList();
-      justFlushedList = false;
       const level = headingMatch[1].length;
       const content = applyInlineRules(escapeHtml(headingMatch[2]));
       output.push(`<h${level}>${content}</h${level}>`);
+      justFlushedList = true; // swallow blank line after heading, same as after a list
     } else if (listMatch) {
       justFlushedList = false;
       const itemContent = applyInlineRules(escapeHtml(listMatch[2]));
