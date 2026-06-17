@@ -19,11 +19,14 @@ Markers can be nested: `*/bold italic/*`, `**_bold underlined_**`, etc.
 
 ## Installation
 
-1. Clone or download this repository.
-2. Open Chrome and navigate to `chrome://extensions`.
-3. Enable **Developer mode** (toggle in the top-right corner).
-4. Click **Load unpacked** and select the repository folder.
-5. Navigate to your LinkedIn feed — formatting renders automatically.
+1. Download the latest zip from the [`dist/`](dist/) folder in this repository.
+2. Unzip it anywhere on your machine — the folder it creates is your extension folder.
+3. Open Chrome and navigate to `chrome://extensions`.
+4. Enable **Developer mode** (toggle in the top-right corner).
+5. Click **Load unpacked** and select the unzipped folder.
+6. Navigate to your LinkedIn feed — formatting renders automatically.
+
+> **Note:** Chrome may show a warning about developer-mode extensions on startup. This is normal for extensions installed outside the Chrome Web Store. Click **Keep** to dismiss it.
 
 ## How it works
 

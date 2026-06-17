@@ -1,1 +1,2 @@
-*.zip
+# Ignore root-level zips (scratch builds) but not dist/
+/*.zip
