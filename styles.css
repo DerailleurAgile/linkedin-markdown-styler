@@ -1,0 +1,37 @@
+/* LinkedIn Markdown Renderer — styles.css */
+
+/* Rendered container — inherit LinkedIn's own font/size */
+.lmr-rendered {
+  font: inherit;
+  color: inherit;
+  line-height: 1.5; /* Matches LinkedIn's standard text spacing */
+  white-space: pre-wrap;
+  word-break: break-word;
+  display: inline-block; /* Helps maintain alignment within the span */
+  width: 100%;
+}
+
+/* Bullet / dash lists */
+.lmr-list {
+  margin: 0 0 0 1.5em;
+  padding: 0;
+  list-style-type: disc;
+}
+
+.lmr-list li {
+  margin: 2px 0;
+  line-height: 1.5;
+}
+
+/* Inline styles — keep them subtle so they blend with LinkedIn's UI */
+.lmr-rendered strong {
+  font-weight: 700;
+}
+
+.lmr-rendered u {
+  text-decoration: underline;
+}
+
+.lmr-rendered em {
+  font-style: italic;
+}
