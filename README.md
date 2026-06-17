@@ -8,6 +8,9 @@ LinkedIn doesn't support rich text formatting natively, but many people write po
 
 | You type | Renders as |
 |---|---|
+| `# Heading` | large heading |
+| `## Sub-heading` | medium heading |
+| `### Sub-sub` | small heading |
 | `**bold**` | **bold** |
 | `*italic*` | *italic* |
 | `/italic/` | *italic (alt)* |

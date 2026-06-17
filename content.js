@@ -2,6 +2,9 @@
  * LinkedIn Markdown Specs — content.js
  *
  * Supported syntax:
+ *   # Heading          → <h1>
+ *   ## Sub-heading     → <h2>
+ *   ### Sub-sub        → <h3>
  *   **bold**           → <strong>
  *   _underline_        → <u>
  *   /italics/          → <em>
@@ -113,9 +116,16 @@ function markdownToHtml(text) {
 
   for (let i = 0; i < lines.length; i++) {
     const raw = lines[i];
-    const listMatch = raw.match(/^([*\-])\s+(.+)$/);
+    const headingMatch = raw.match(/^(#{1,3})\s+(.+)$/);
+    const listMatch = !headingMatch && raw.match(/^([*\-])\s+(.+)$/);
 
-    if (listMatch) {
+    if (headingMatch) {
+      flushList();
+      justFlushedList = false;
+      const level = headingMatch[1].length;
+      const content = applyInlineRules(escapeHtml(headingMatch[2]));
+      output.push(`<h${level}>${content}</h${level}>`);
+    } else if (listMatch) {
       justFlushedList = false;
       const itemContent = applyInlineRules(escapeHtml(listMatch[2]));
       listItems.push(`<li>${itemContent}</li>`);
@@ -145,7 +155,8 @@ function markdownToHtml(text) {
  */
 function containsMarkdown(text) {
   return (
-    /\*\*.+?\*\*/.test(text) ||                         // **bold**
+    /^#{1,3}\s+.+/m.test(text) ||                        // # headings
+    /\*\*.+?\*\*/.test(text) ||                          // **bold**
     /(?<!\*)\*(?!\*)(?!\s).+?(?<!\s)\*(?!\*)/.test(text) || // *italic*
     /(?<!:)\/(?!\/).+?(?<![\s:])\/(?!\w)/.test(text) || // /italic/
     /(?<![_\w])_[^_]+?_(?![_\w])/.test(text) ||         // _underline_
