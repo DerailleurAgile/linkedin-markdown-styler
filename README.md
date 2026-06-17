@@ -19,7 +19,7 @@ Markers can be nested: `*/bold italic/*`, `**_bold underlined_**`, etc.
 
 ## Installation
 
-1. Download the latest zip from the [`dist/`](dist/) folder in this repository.
+1. Download the latest zip from the [Releases page](https://github.com/DerailleurAgile/linkedin-markdown-styler/releases/latest).
 2. Unzip it anywhere on your machine — the folder it creates is your extension folder.
 3. Open Chrome and navigate to `chrome://extensions`.
 4. Enable **Developer mode** (toggle in the top-right corner).
