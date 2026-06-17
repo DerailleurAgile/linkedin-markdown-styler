@@ -186,18 +186,29 @@ function processElement(el) {
 /**
  * Scan the document for all matching post text containers and process them.
  */
+const POST_TEXT_SELECTOR = POST_TEXT_SELECTORS.join(', ');
+
 function processAllPosts() {
-  const selector = POST_TEXT_SELECTORS.join(', ');
-  document.querySelectorAll(selector).forEach(processElement);
+  document.querySelectorAll(POST_TEXT_SELECTOR).forEach(processElement);
 }
 
 // ─── MutationObserver for dynamic feed loading ────────────────────────────────
 
-// 3. Improve the Observer to catch SPA (Single Page App) navigation
 let timeout = null;
-const observer = new MutationObserver(() => {
+const observer = new MutationObserver((mutations) => {
+  // Process newly added nodes immediately — don't wait for the debounce.
+  // The feed generates constant mutations (React re-renders, hover states, etc.)
+  // that keep resetting a pure debounce, so posts would rarely get processed.
+  for (const mutation of mutations) {
+    for (const node of mutation.addedNodes) {
+      if (node.nodeType !== Node.ELEMENT_NODE) continue;
+      if (node.matches(POST_TEXT_SELECTOR)) processElement(node);
+      node.querySelectorAll(POST_TEXT_SELECTOR).forEach(processElement);
+    }
+  }
+  // Debounced full scan as a fallback for text updates in existing elements.
   clearTimeout(timeout);
-  timeout = setTimeout(processAllPosts, 500); // 500ms allows React to finish
+  timeout = setTimeout(processAllPosts, 500);
 });
 
 // Start observing
