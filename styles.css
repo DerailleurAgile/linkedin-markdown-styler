@@ -52,6 +52,12 @@
   font-weight: 700;
 }
 
+/* LinkedIn wraps link text in its own <strong>; let the link's styling decide
+   its weight rather than the bold rule above. */
+.lmr-rendered a strong {
+  font-weight: inherit;
+}
+
 .lmr-rendered u {
   text-decoration: underline;
 }

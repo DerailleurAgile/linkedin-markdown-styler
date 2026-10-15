@@ -171,7 +171,17 @@ function containsMarkdown(text) {
  * replaced in the text by a \x01-delimited index, so the markdown rules treat
  * each link as one opaque unit (no stray /italic/ matches inside URLs) and
  * restoreLinks() can swap the original element back in after rendering.
+ * A wrapper whose only content is a link (LinkedIn wraps each <a> in a styled
+ * <span>) is captured instead of the bare <a>, since the link's colour and
+ * weight come from the wrapper's classes.
  */
+function isLinkUnit(node) {
+  return node.tagName === 'A' ||
+    (node.childNodes.length === 1 &&
+     node.firstChild.nodeType === Node.ELEMENT_NODE &&
+     isLinkUnit(node.firstChild));
+}
+
 function getPostText(el, links) {
   let text = '';
   for (const node of el.childNodes) {
@@ -180,7 +190,7 @@ function getPostText(el, links) {
     } else if (node.nodeType === Node.ELEMENT_NODE) {
       if (node.tagName === 'BUTTON') continue;
       if (node.tagName === 'BR') { text += '\n'; continue; }
-      if (node.tagName === 'A') {
+      if (isLinkUnit(node)) {
         text += `\x01${links.length}\x01`;
         links.push(node);
         continue;
@@ -193,8 +203,8 @@ function getPostText(el, links) {
 
 /**
  * Replace link placeholder spans in the rendered wrapper with clones of the
- * original <a> elements. Clones are inserted as nodes rather than serialized HTML so
- * LinkedIn's markup is carried over exactly.
+ * original link elements. Clones are inserted as nodes rather than serialized
+ * HTML so LinkedIn's markup is carried over exactly.
  */
 function restoreLinks(wrapper, links) {
   wrapper.querySelectorAll('[data-lmr-link]').forEach((placeholder) => {
