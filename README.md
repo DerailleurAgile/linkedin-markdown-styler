@@ -17,6 +17,7 @@ LinkedIn doesn't support rich text formatting natively, but many people write po
 | `_underline_` | underlined text |
 | `* item text` | bullet list |
 | `- item text` | bullet list (dash) |
+| `> quote text` | blockquote (consecutive `>` lines merge; a bare `>` adds a blank line inside) |
 
 Markers can be nested: `*/bold italic/*`, `**_bold underlined_**`, etc.
 

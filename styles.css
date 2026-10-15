@@ -23,6 +23,15 @@
   line-height: 1.5;
 }
 
+/* Blockquotes — a muted bar derived from the text colour, so it works on
+   LinkedIn's light and dark themes alike. */
+.lmr-quote {
+  margin: 0;
+  padding: 0 0 0 0.8em;
+  border-left: 3px solid color-mix(in srgb, currentColor 30%, transparent);
+  color: color-mix(in srgb, currentColor 80%, transparent);
+}
+
 /* Headings — sized to be distinct but not oversized in a feed context.
    Margins are zeroed out: white-space:pre-wrap means the \n characters in the
    output already provide line spacing; adding CSS margin on top doubles it. */

@@ -10,6 +10,7 @@
  *   /italics/          → <em>
  *   * item             → <ul><li>  (bullet list)
  *   - item             → <ul><li>  (dash list)
+ *   > quote            → <blockquote>
  */
 
 'use strict';
@@ -95,20 +96,27 @@ function applyInlineRules(line, tokens = []) {
 
 /**
  * Convert a block of plain text containing markdown to an HTML string.
- * Handles bullet lists (both * and -) as well as inline styles.
+ * Handles bullet lists (both * and -), > blockquotes, headings, and inline
+ * styles.
  */
 function markdownToHtml(text) {
   const lines = text.split('\n');
   const output = [];
   let listItems = [];
+  let quoteLines = [];
 
-  let justFlushedList = false;
+  let justFlushedBlock = false;
 
-  function flushList() {
+  function flushBlocks() {
     if (listItems.length) {
       output.push(`<ul class="lmr-list">${listItems.join('')}</ul>`);
       listItems = [];
-      justFlushedList = true;
+      justFlushedBlock = true;
+    }
+    if (quoteLines.length) {
+      output.push(`<blockquote class="lmr-quote">${quoteLines.join('\n')}</blockquote>`);
+      quoteLines = [];
+      justFlushedBlock = true;
     }
   }
 
@@ -116,32 +124,40 @@ function markdownToHtml(text) {
     const raw = lines[i];
     const headingMatch = raw.match(/^(#{1,3})\s+(.+)$/);
     const listMatch = !headingMatch && raw.match(/^([*\-])\s+(.+)$/);
+    // "> text", or a bare ">" for a blank line inside a quote. Consecutive
+    // quote lines merge into one blockquote.
+    const quoteMatch = !headingMatch && !listMatch && raw.match(/^>\s?(.*)$/);
 
     if (headingMatch) {
-      flushList();
+      flushBlocks();
       const level = headingMatch[1].length;
       const content = applyInlineRules(escapeHtml(headingMatch[2]));
       output.push(`<h${level}>${content}</h${level}>`);
-      justFlushedList = true; // swallow blank line after heading, same as after a list
+      justFlushedBlock = true; // swallow blank line after heading, same as after a list
     } else if (listMatch) {
-      justFlushedList = false;
+      if (quoteLines.length) flushBlocks();
+      justFlushedBlock = false;
       const itemContent = applyInlineRules(escapeHtml(listMatch[2]));
       listItems.push(`<li>${itemContent}</li>`);
+    } else if (quoteMatch) {
+      if (listItems.length) flushBlocks();
+      justFlushedBlock = false;
+      quoteLines.push(applyInlineRules(escapeHtml(quoteMatch[1])));
     } else {
-      flushList();
-      // Swallow the first blank line after a list — the <ul> block already
-      // creates a line break, so the blank would otherwise double-space.
+      flushBlocks();
+      // Swallow the first blank line after a list or quote — the block element
+      // already creates a line break, so the blank would otherwise double-space.
       if (raw.trim() === '') {
-        if (!justFlushedList) output.push('');
-        justFlushedList = false;
+        if (!justFlushedBlock) output.push('');
+        justFlushedBlock = false;
       } else {
-        justFlushedList = false;
+        justFlushedBlock = false;
         output.push(applyInlineRules(escapeHtml(raw)));
       }
     }
   }
 
-  flushList();
+  flushBlocks();
 
   return output.join('\n');
 }
@@ -158,7 +174,8 @@ function containsMarkdown(text) {
     /(?<!\*)\*(?!\*)(?!\s).+?(?<!\s)\*(?!\*)/.test(text) || // *italic*
     /(?<!:)\/(?!\/).+?(?<![\s:])\/(?!\w)/.test(text) || // /italic/
     /(?<![_\w])_[^_]+?_(?![_\w])/.test(text) ||         // _underline_
-    /^[*\-]\s+.+/m.test(text)                            // * or - list items
+    /^[*\-]\s+.+/m.test(text) ||                         // * or - list items
+    /^>\s?\S/m.test(text)                                 // > blockquote
   );
 }
 
