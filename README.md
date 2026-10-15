@@ -33,7 +33,7 @@ Markers can be nested: `*/bold italic/*`, `**_bold underlined_**`, etc.
 
 ## How it works
 
-- A content script runs on `linkedin.com/feed/*` and `linkedin.com/posts/*`.
+- A content script runs on `linkedin.com/feed/*`, `linkedin.com/posts/*`, and profile activity pages (`linkedin.com/in/*/recent-activity/*`).
 - A `MutationObserver` watches for new posts as the feed loads dynamically, with a 500 ms debounce so React finishes rendering before the extension processes new nodes.
 - Rather than modifying LinkedIn's React-managed DOM elements (which breaks reconciliation), the extension hides the original text node and injects a sibling `<span>` containing the rendered HTML. React never sees the sibling, so the UI stays stable.
 - A `popstate` listener handles SPA navigation (browser Back/Forward).
