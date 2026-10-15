@@ -54,13 +54,14 @@ function escapeHtml(str) {
  *   3. /italic/  alternative italic syntax
  *   4. _underline_  — requires non-word chars on both sides to avoid "snake_case" hits
  */
-function applyInlineRules(line) {
-  const tokens = [];
-
+function applyInlineRules(line, tokens = []) {
   // Stash rendered HTML as a null-byte-delimited token index.
   // Null bytes never appear in LinkedIn post text, so there is no collision risk.
   // This prevents HTML injected by one rule (e.g. the "/" in "</em>")
   // from being matched by a subsequent rule.
+  // The tokens array is shared across recursive calls: a captured group can
+  // contain an outer level's token id, and a per-call array would restore that
+  // id to the wrong HTML.
   function tokenize(html) {
     const id = `\x00${tokens.length}\x00`;
     tokens.push(html);
@@ -69,7 +70,7 @@ function applyInlineRules(line) {
 
   // Recursively render any nested markers inside a captured group,
   // enabling combinations like */bold italic/* or *_bold underline_*
-  function inner(c) { return applyInlineRules(c); }
+  function inner(c) { return applyInlineRules(c, tokens); }
 
   // 1. **bold** — double asterisk takes priority over single
   line = line.replace(/\*\*(.+?)\*\*/g,
@@ -87,12 +88,9 @@ function applyInlineRules(line) {
   line = line.replace(/(?<![_\w])_([^_]+?)_(?![_\w])/g,
     (_, c) => tokenize(`<u>${inner(c)}</u>`));
 
-  // Restore all tokens to actual HTML
-  tokens.forEach((html, i) => {
-    line = line.split(`\x00${i}\x00`).join(html);
-  });
-
-  return line;
+  // Restore all tokens to actual HTML. Inner calls restore before returning,
+  // so token HTML never contains unresolved ids.
+  return line.replace(/\x00(\d+)\x00/g, (_, i) => tokens[i]);
 }
 
 /**
@@ -168,8 +166,13 @@ function containsMarkdown(text) {
  * Extract post text from an element, converting <br> to newlines and
  * skipping <button> nodes (e.g. LinkedIn's "…see more" toggle).
  * We can't use innerText here because it would include the button text.
+ *
+ * <a> elements (URLs, @mentions, #hashtags) are pushed onto `links` and
+ * replaced in the text by a \x01-delimited index, so the markdown rules treat
+ * each link as one opaque unit (no stray /italic/ matches inside URLs) and
+ * restoreLinks() can swap the original element back in after rendering.
  */
-function getPostText(el) {
+function getPostText(el, links) {
   let text = '';
   for (const node of el.childNodes) {
     if (node.nodeType === Node.TEXT_NODE) {
@@ -177,10 +180,26 @@ function getPostText(el) {
     } else if (node.nodeType === Node.ELEMENT_NODE) {
       if (node.tagName === 'BUTTON') continue;
       if (node.tagName === 'BR') { text += '\n'; continue; }
-      text += getPostText(node);
+      if (node.tagName === 'A') {
+        text += `\x01${links.length}\x01`;
+        links.push(node);
+        continue;
+      }
+      text += getPostText(node, links);
     }
   }
   return text;
+}
+
+/**
+ * Replace link placeholder spans in the rendered wrapper with clones of the
+ * original <a> elements. Clones are inserted as nodes rather than serialized HTML so
+ * LinkedIn's markup is carried over exactly.
+ */
+function restoreLinks(wrapper, links) {
+  wrapper.querySelectorAll('[data-lmr-link]').forEach((placeholder) => {
+    placeholder.replaceWith(links[placeholder.dataset.lmrLink].cloneNode(true));
+  });
 }
 
 /**
@@ -190,7 +209,8 @@ function processElement(el) {
   if (el.hasAttribute(PROCESSED_ATTR)) return;
   if (el.hasAttribute('data-lmr-sibling')) return;
 
-  const originalText = getPostText(el);
+  const links = [];
+  const originalText = getPostText(el, links);
   if (!originalText || !containsMarkdown(originalText)) return;
 
   el.setAttribute(PROCESSED_ATTR, '1');
@@ -206,7 +226,9 @@ function processElement(el) {
   const wrapper = document.createElement('span');
   wrapper.className = 'lmr-rendered';
   wrapper.setAttribute('data-lmr-sibling', '1');
-  wrapper.innerHTML = rendered;
+  wrapper.innerHTML = rendered.replace(/\x01(\d+)\x01/g,
+    (_, i) => `<span data-lmr-link="${i}"></span>`);
+  restoreLinks(wrapper, links);
 
   el.style.display = 'none';
   el.insertAdjacentElement('afterend', wrapper);
