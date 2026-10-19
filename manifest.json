@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "LinkedIn Markdown Specs",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Automatically renders markdown formatting in LinkedIn feed posts.",
   "permissions": [],
   "content_scripts": [
